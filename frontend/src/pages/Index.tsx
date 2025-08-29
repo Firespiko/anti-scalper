@@ -3,13 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EventCard } from "@/components/EventCard";
-import { TransactionStatus } from "@/components/TransactionStatus";
+import { TransactionStatus, TransactionStatus as TxStatus } from "@/components/TransactionStatus";
 import { NFTTicket } from "@/components/NFTTicket";
 import { WalletConnect } from "@/components/WalletConnect";
 import { Navbar } from "@/components/Navbar";
 import { GiftModal } from "@/components/GiftModal";
 import { SellModal } from "@/components/SellModal";
-
 import { Zap, Shield, Ticket, TrendingUp, Store, Wallet, Calendar, MapPin } from "lucide-react";
 import heroBackground from "@/assets/hero-background.jpg";
 
@@ -35,7 +34,6 @@ interface GroupedTicket {
 }
 
 const groupTickets = (tickets: any[]): GroupedTicket[] => {
-
   const ticketMap: Record<string, any> = {};
 
   tickets.forEach(ticket => {
@@ -63,8 +61,7 @@ const groupTickets = (tickets: any[]): GroupedTicket[] => {
   return Object.values(ticketMap);
 };
 
-// Mock events data
-const mockEvents: EventType[] = [
+const mockEvents = [
   {
     id: "1",
     title: "Neon Dreams Festival",
@@ -76,8 +73,6 @@ const mockEvents: EventType[] = [
     burntTickets: 15,
     totalTickets: 500,
     category: "Music Festival",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   },
   {
     id: "2", 
@@ -90,8 +85,6 @@ const mockEvents: EventType[] = [
     burntTickets: 15,
     totalTickets: 200,
     category: "Conference",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   },
   {
     id: "3",
@@ -104,8 +97,6 @@ const mockEvents: EventType[] = [
     burntTickets: 6,
     totalTickets: 300,
     category: "Concert",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   },
 ];
 
@@ -133,18 +124,15 @@ const features = [
 const Index = () => {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [transactionStatus, setTransactionStatus] = useState<TxStatus>(null);
-  const [purchasedTickets, setPurchasedTickets] = useState<Ticket[]>([]);
-  const [giftedTickets, setGiftedTickets] = useState<Ticket[]>([]);
-  const [events, setEvents] = useState<EventType[]>(mockEvents);
-  const [loading, setLoading] = useState(false);
-  const [contractData, setContractData] = useState<any>(null);
+  const [transactionStatus, setTransactionStatus] = useState<TxStatus | null>(null);
+  const [purchasedTickets, setPurchasedTickets] = useState<any[]>([]);
+  const [giftedTickets, setGiftedTickets] = useState<any[]>([]);
+  const [events, setEvents] = useState(mockEvents);
   
   // Modal states
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
   const [isGifting, setIsGifting] = useState(false);
   const [isSelling, setIsSelling] = useState(false);
   
@@ -156,53 +144,72 @@ const Index = () => {
   const eventsSectionRef = useRef<HTMLDivElement>(null);
   const ticketsSectionRef = useRef<HTMLDivElement>(null);
 
-  // Get user session
-  const appConfig = new AppConfig(["publish_data"]);
-  const userSession = new UserSession({ appConfig });
-
-  // Load contract data when wallet is connected
+  // Load tickets from localStorage when wallet is connected
   useEffect(() => {
-    const loadContractData = async () => {
-      if (isWalletConnected && walletAddress) {
-        setLoading(true);
+    if (isWalletConnected && walletAddress) {
+      const savedTickets = localStorage.getItem(`nft_tickets_${walletAddress}`);
+      if (savedTickets) {
         try {
-          // Load contract data
-          const totalSupply = await clarityApi.getTotalSupply();
-          const lastTokenId = await clarityApi.getLastTokenId();
-          
-          setContractData({
-            totalSupply,
-            lastTokenId
-          });
-          
-          // Load user tickets from backend (verified with Clarity)
-          const ticketsResponse = await ticketApi.getUserTickets("user-id", walletAddress); // Replace with real user ID
-          if (ticketsResponse.success && ticketsResponse.data) {
-            setPurchasedTickets(ticketsResponse.data);
-          }
-          
-          // Load gifted tickets
-          const giftedResponse = await ticketApi.getGiftedTickets("user-id"); // Replace with real user ID
-          if (giftedResponse.success && giftedResponse.data) {
-            setGiftedTickets(giftedResponse.data);
-          }
+          const parsedTickets = JSON.parse(savedTickets);
+          setPurchasedTickets(parsedTickets);
         } catch (error) {
-          console.error('Error loading contract data:', error);
-          setTransactionStatus("error");
-          setTimeout(() => setTransactionStatus(null), 3000);
-        } finally {
-          setLoading(false);
+          console.error("Error parsing saved tickets:", error);
+          setPurchasedTickets([]);
         }
-      } else {
-        // Reset data when disconnected
-        setContractData(null);
-        setPurchasedTickets([]);
-        setGiftedTickets([]);
+      }
+      
+      // Load gifted tickets
+      const savedGiftedTickets = localStorage.getItem(`gifted_tickets_${walletAddress}`);
+      if (savedGiftedTickets) {
+        try {
+          const parsedGiftedTickets = JSON.parse(savedGiftedTickets);
+          setGiftedTickets(parsedGiftedTickets);
+        } catch (error) {
+          console.error("Error parsing gifted tickets:", error);
+          setGiftedTickets([]);
+        }
+      }
+    }
+  }, [isWalletConnected, walletAddress]);
+
+  // Save tickets to localStorage whenever purchasedTickets changes
+  useEffect(() => {
+    if (isWalletConnected && walletAddress && purchasedTickets.length > 0) {
+      try {
+        localStorage.setItem(`nft_tickets_${walletAddress}`, JSON.stringify(purchasedTickets));
+      } catch (error) {
+        console.error("Error saving tickets to localStorage:", error);
+      }
+    }
+  }, [purchasedTickets, isWalletConnected, walletAddress]);
+
+  // Save gifted tickets to localStorage
+  useEffect(() => {
+    if (isWalletConnected && walletAddress && giftedTickets.length > 0) {
+      try {
+        localStorage.setItem(`gifted_tickets_${walletAddress}`, JSON.stringify(giftedTickets));
+      } catch (error) {
+        console.error("Error saving gifted tickets to localStorage:", error);
+      }
+    }
+  }, [giftedTickets, isWalletConnected, walletAddress]);
+
+  // Close mobile menu when resizing to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        const menuBtn = document.querySelector('.mobile-menu-btn');
+        if (menuBtn?.classList.contains('menu-open')) {
+          menuBtn.classList.remove('menu-open');
+          const mobileNav = document.querySelector('.mobile-nav');
+          mobileNav?.classList.remove('mobile-nav-open');
+        }
       }
     };
 
-    loadContractData();
-  }, [isWalletConnected, walletAddress]);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleWalletConnection = (connected: boolean, address?: string) => {
     setIsWalletConnected(connected);
@@ -211,117 +218,98 @@ const Index = () => {
     // If disconnecting, also clear any pending transactions
     if (!connected) {
       setTransactionStatus(null);
-      setCurrentUser(null);
       setPurchasedTickets([]);
       setGiftedTickets([]);
-      setContractData(null);
     }
   };
 
-  const handleBuyTicket = async (eventId: string) => {
-    if (!isWalletConnected || !walletAddress) {
-      setTransactionStatus("error");
-      setTimeout(() => setTransactionStatus(null), 3000);
-      return;
-    }
+  const handleBuyTicket = (eventId: string) => {
+    if (!isWalletConnected) return;
     
     const event = events.find(e => e.id === eventId);
-    if (!event || event.availableTickets === 0) {
-      setTransactionStatus("error");
-      setTimeout(() => setTransactionStatus(null), 3000);
-      return;
-    }
+    if (!event || event.availableTickets === 0) return;
 
     setTransactionStatus("pending");
     
-    try {
-      // Call the buy ticket function
-      const response = await ticketApi.buyTicket("user-id", eventId, walletAddress); // Replace with real user ID
-      
-      if (response.success && response.data) {
-        // Add new ticket to purchased tickets
-        setPurchasedTickets(prev => [...prev, response.data!]);
-        setTransactionStatus("success");
-        
-        // Update event statistics
-        setEvents(prev => 
-          prev.map(e => 
+    // Simulate transaction processing
+    setTimeout(() => {
+      const random = Math.random();
+      if (random > 0.8) {
+        // 20% chance of fraud detection - ticket gets burnt
+        setTransactionStatus("fraud");
+        setEvents(prevEvents => 
+          prevEvents.map(e => 
             e.id === eventId 
-              ? { 
-                  ...e, 
-                  availableTickets: e.availableTickets - 1, 
-                  soldTickets: e.soldTickets + 1 
-                }
+              ? { ...e, availableTickets: e.availableTickets - 1, burntTickets: e.burntTickets + 1 }
               : e
           )
         );
-        
-        setTimeout(() => setTransactionStatus(null), 3000);
       } else {
-        throw new Error(response.error || 'Failed to purchase ticket');
+        // 80% chance of success
+        const ticketId = `TKT${Date.now()}`;
+        const newTicket = {
+          ticketId,
+          eventTitle: event.title,
+          eventDate: event.date,
+          eventLocation: event.location,
+          price: event.price,
+          status: "valid" as const,
+          txHash: `0x${Math.random().toString(16).substr(2, 64)}`,
+        };
+        setPurchasedTickets(prev => [...prev, newTicket]);
+        setTransactionStatus("success");
+        
+        // Update event statistics
+        setEvents(prevEvents => 
+          prevEvents.map(e => 
+            e.id === eventId 
+              ? { ...e, availableTickets: e.availableTickets - 1, soldTickets: e.soldTickets + 1 }
+              : e
+          )
+        );
       }
-    } catch (error) {
-      console.error('Error buying ticket:', error);
-      setTransactionStatus("error");
-      setTimeout(() => setTransactionStatus(null), 3000);
-    }
+    }, 3000);
   };
 
-  const openGiftModal = (ticket: Ticket) => {
+  const openGiftModal = (ticket: any) => {
     setSelectedTicket(ticket);
     setIsGiftModalOpen(true);
   };
 
-  const openSellModal = (ticket: Ticket) => {
+  const openSellModal = (ticket: any) => {
     setSelectedTicket(ticket);
     setIsSellModalOpen(true);
   };
 
-  const handleGiftTicket = async (receiverAddress: string) => {
-    if (!selectedTicket || !walletAddress) {
-      setIsGifting(false);
-      setIsGiftModalOpen(false);
-      setSelectedTicket(null);
-      return;
-    }
-    
+  const handleGiftTicket = (receiverAddress: string) => {
     setIsGifting(true);
     
-    try {
-      const response = await ticketApi.giftTicket(
-        selectedTicket.id, 
-        "user-id", // Replace with real user ID
-        receiverAddress,
-        walletAddress,
-        selectedTicket.tokenId || 0
+    // Simulate gifting process
+    setTimeout(() => {
+      // Remove ticket from purchased tickets
+      setPurchasedTickets(prev => 
+        prev.filter(t => t.ticketId !== selectedTicket.ticketId)
       );
       
-      if (response.success && response.data) {
-        // Remove ticket from purchased tickets
-        setPurchasedTickets(prev => 
-          prev.filter(t => t.id !== selectedTicket.id)
-        );
-        
-        // Add ticket to gifted tickets
-        setGiftedTickets(prev => [...prev, response.data!]);
-        
-        // Close modal and reset state
-        setIsGiftModalOpen(false);
-        setIsGifting(false);
-        setSelectedTicket(null);
-        
-        // Show success message
-        setTransactionStatus("success");
-        setTimeout(() => setTransactionStatus(null), 3000);
-      } else {
-        throw new Error(response.error || 'Failed to gift ticket');
-      }
-    } catch (error) {
-      console.error('Error gifting ticket:', error);
+      // Add ticket to gifted tickets with receiver info
+      const giftedTicket = {
+        ...selectedTicket,
+        giftedTo: receiverAddress,
+        giftDate: new Date().toLocaleDateString(),
+        status: "gifted" as const
+      };
+      
+      setGiftedTickets(prev => [...prev, giftedTicket]);
+      
+      // Close modal and reset state
+      setIsGiftModalOpen(false);
       setIsGifting(false);
-      setTransactionStatus("error");
+      setSelectedTicket(null);
+      
+      // Show success message
+      setTransactionStatus("success");
       setTimeout(() => setTransactionStatus(null), 3000);
-    }
+    }, 2000);
   };
 
   const handleSellTicket = (price: number, quantity: number = 1) => {
@@ -392,31 +380,9 @@ const Index = () => {
         
         setTransactionStatus("success");
       }
-
       
-      if (listResponse.success && listResponse.data) {
-        // Update ticket status to listed
-        setPurchasedTickets(prev => 
-          prev.map(t => 
-            t.id === selectedTicket.id 
-              ? { ...t, status: "listed", sellPrice: price, price: price }
-              : t
-          )
-        );
-        
-        // Close modal and reset state
-        setIsSellModalOpen(false);
-        setIsSelling(false);
-        setSelectedTicket(null);
-        
-        // Show success message
-        setTransactionStatus("success");
-        setTimeout(() => setTransactionStatus(null), 3000);
-      } else {
-        throw new Error(listResponse.error || 'Failed to list ticket');
-      }
-    } catch (error) {
-      console.error('Error listing ticket:', error);
+      // Close modal and reset state
+      setIsSellModalOpen(false);
       setIsSelling(false);
       setSelectedTicket(null);
       setTimeout(() => setTransactionStatus(null), 3000);
@@ -435,9 +401,8 @@ const Index = () => {
       );
       
       setTransactionStatus("success");
-
       setTimeout(() => setTransactionStatus(null), 3000);
-    }
+    }, 2000);
   };
 
   // Function to scroll to sections
@@ -551,15 +516,6 @@ const Index = () => {
               Explore Events
             </Button>
           </div>
-          
-          {/* Contract Info */}
-          {contractData && (
-            <div className="mt-8 p-4 bg-black/20 backdrop-blur-sm rounded-lg border border-white/10">
-              <p className="text-white/80 text-sm">
-                Contract Data: {contractData.totalSupply?.toString() || 'Loading...'} tickets minted
-              </p>
-            </div>
-          )}
         </div>
       </section>
 
@@ -584,7 +540,6 @@ const Index = () => {
                 </p>
               </Card>
             ))}
-
           </div>
         </div>
       </section>
@@ -699,7 +654,6 @@ const Index = () => {
               </div>
             ))}
           </div>
-
         </div>
       </section>
 
@@ -742,7 +696,6 @@ const Index = () => {
                       />
                     </div>
                   </div>
-
                 ))}
               </div>
             ) : (
@@ -850,7 +803,6 @@ const Index = () => {
                 </div>
               ))}
             </div>
-
             <div className="text-center mt-8">
               <p className="text-muted-foreground">
                 These tickets have been gifted to other wallet addresses
