@@ -1,130 +1,100 @@
-import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, AlertTriangle, Flame, Clock, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { X, CheckCircle, AlertTriangle, Clock, AlertCircle } from "lucide-react";
 
-export type TransactionStatus = "pending" | "success" | "fraud" | "failed";
+export type TransactionStatusType = "pending" | "success" | "error" | "fraud" | null;
 
 interface TransactionStatusProps {
+  status: TransactionStatusType;
   txId?: string;
-  status: TransactionStatus;
   ticketId?: string;
   eventName?: string;
-  onClose?: () => void;
+  onClose: () => void;
 }
 
 export const TransactionStatus = ({ 
-  txId, 
   status, 
+  txId, 
   ticketId, 
   eventName,
   onClose 
 }: TransactionStatusProps) => {
   const getStatusConfig = () => {
     switch (status) {
+      case "pending":
+        return {
+          icon: <Clock className="w-6 h-6 text-yellow-500" />,
+          title: "Processing Transaction",
+          message: "Your transaction is being processed on the blockchain...",
+          bgColor: "bg-yellow-500/10",
+          borderColor: "border-yellow-500/20",
+          textColor: "text-yellow-700 dark:text-yellow-300"
+        };
       case "success":
         return {
-          icon: CheckCircle,
+          icon: <CheckCircle className="w-6 h-6 text-success" />,
           title: "Transaction Successful!",
-          description: "Your NFT ticket has been minted successfully",
-          badgeText: "Success",
-          badgeClass: "bg-success text-success-foreground",
-          cardClass: "border-success/30 shadow-success",
+          message: `Ticket ${ticketId} for ${eventName} has been purchased successfully.`,
+          bgColor: "bg-success/10",
+          borderColor: "border-success/20",
+          textColor: "text-success"
+        };
+      case "error":
+        return {
+          icon: <AlertCircle className="w-6 h-6 text-destructive" />,
+          title: "Transaction Failed",
+          message: "There was an error processing your transaction. Please try again.",
+          bgColor: "bg-destructive/10",
+          borderColor: "border-destructive/20",
+          textColor: "text-destructive"
         };
       case "fraud":
         return {
-          icon: Flame,
-          title: "Fraud Detected - Ticket Burnt",
-          description: "Suspicious activity detected. The ticket has been permanently destroyed",
-          badgeText: "Fraud Detected",
-          badgeClass: "bg-fraud text-fraud-foreground",
-          cardClass: "border-fraud/30 shadow-fraud",
-        };
-      case "failed":
-        return {
-          icon: AlertTriangle,
-          title: "Transaction Failed",
-          description: "The transaction could not be completed. Please try again",
-          badgeText: "Failed",
-          badgeClass: "bg-destructive text-destructive-foreground",
-          cardClass: "border-destructive/30",
+          icon: <AlertTriangle className="w-6 h-6 text-warning" />,
+          title: "Fraud Detection Triggered",
+          message: "Suspicious activity detected. Transaction has been flagged and ticket burned.",
+          bgColor: "bg-warning/10",
+          borderColor: "border-warning/20",
+          textColor: "text-warning"
         };
       default:
-        return {
-          icon: Clock,
-          title: "Transaction Pending",
-          description: "Your transaction is being processed on the blockchain",
-          badgeText: "Pending",
-          badgeClass: "bg-muted text-muted-foreground",
-          cardClass: "border-muted/30 animate-pulse",
-        };
+        return null;
     }
   };
 
   const config = getStatusConfig();
-  const StatusIcon = config.icon;
+  if (!config) return null;
 
   return (
-    <Card className={`p-6 bg-gradient-card ${config.cardClass}`}>
-      <div className="flex items-start gap-4">
-        <div className={`p-3 rounded-full ${
-          status === "success" ? "bg-success/10 border border-success/20" :
-          status === "fraud" ? "bg-fraud/10 border border-fraud/20" :
-          status === "failed" ? "bg-destructive/10 border border-destructive/20" :
-          "bg-muted/10 border border-muted/20"
-        }`}>
-          <StatusIcon className={`w-6 h-6 ${
-            status === "success" ? "text-success" :
-            status === "fraud" ? "text-fraud" :
-            status === "failed" ? "text-destructive" :
-            "text-muted-foreground"
-          }`} />
-        </div>
-
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="font-semibold text-foreground">{config.title}</h3>
-            <Badge className={config.badgeClass}>{config.badgeText}</Badge>
+    <Card className={`p-6 ${config.bgColor} ${config.borderColor} border`}>
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex items-center gap-3">
+          {config.icon}
+          <div>
+            <h3 className={`font-bold text-lg ${config.textColor}`}>
+              {config.title}
+            </h3>
           </div>
-          
-          <p className="text-sm text-muted-foreground mb-4">{config.description}</p>
-
-          {eventName && (
-            <div className="mb-3">
-              <span className="text-sm font-medium text-foreground">Event: </span>
-              <span className="text-sm text-muted-foreground">{eventName}</span>
-            </div>
-          )}
-
-          {ticketId && status === "success" && (
-            <div className="mb-3">
-              <span className="text-sm font-medium text-foreground">Ticket NFT ID: </span>
-              <span className="text-sm text-accent font-mono">#{ticketId}</span>
-            </div>
-          )}
-
-          {txId && (
-            <div className="mb-4">
-              <span className="text-sm font-medium text-foreground">Transaction ID: </span>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm text-muted-foreground font-mono">
-                  {txId.slice(0, 8)}...{txId.slice(-8)}
-                </span>
-                <Button variant="ghost" size="sm" className="h-6 px-2">
-                  <ExternalLink className="w-3 h-3" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {onClose && (
-            <Button variant="outline" size="sm" onClick={onClose}>
-              Close
-            </Button>
-          )}
         </div>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={onClose}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <X className="w-5 h-5" />
+        </Button>
       </div>
+      
+      <p className={`mb-4 ${config.textColor}`}>
+        {config.message}
+      </p>
+      
+      {txId && (
+        <div className="text-sm text-muted-foreground font-mono break-all">
+          Transaction ID: {txId.slice(0, 8)}...{txId.slice(-6)}
+        </div>
+      )}
     </Card>
   );
 };
