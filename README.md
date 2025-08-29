@@ -2,6 +2,9 @@
 
 A revolutionary decentralized application built on the Stacks blockchain that transforms event ticketing by implementing automatic anti-scalping mechanisms directly into the smart contract layer. This project combines the security of Bitcoin with the flexibility of smart contracts to create a fair, transparent, and tamper-proof ticketing system.
 
+Deployed Smart Contract - https://explorer.hiro.so/txid/0x0f7dbe9bcf042055b7e5786943da1adadb2856df20328b9904ad3a41f830a990?chain=testnet
+
+
 ![Architecture diagram of the ticketing dApp](generated_image:47)
 
 ---
