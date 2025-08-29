@@ -1,0 +1,18 @@
+---
+id: 0
+name: Testnet deployment
+network: testnet
+stacks-node: "https://api.testnet.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: anti-scalper
+            expected-sender: ST3TVNJ5M6DPK63RF9PCVBMZ7VHA0EBK8NFAPY55P
+            cost: 1459868
+            path: contracts/anti-scalper.clar
+            anchor-block-only: true
+            clarity-version: 3
+      epoch: "3.1"
