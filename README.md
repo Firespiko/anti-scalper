@@ -4,7 +4,7 @@ A revolutionary decentralized application built on the Stacks blockchain that tr
 
 Deployed Smart Contract - https://explorer.hiro.so/txid/0x0f7dbe9bcf042055b7e5786943da1adadb2856df20328b9904ad3a41f830a990?chain=testnet
 
-Demo: [Watch Video on Loom](https://www.loom.com/embed/d615d2eb6a744896b17d2ef681a16aa9?sid=c31dc6f1-7525-417c-9d0f-50bd4700744b)
+Demo: [Watch Video on Loom](https://www.loom.com/embed/6917476e4cb44280b3a9056b28c3173e?sid=3933c1a4-14f3-4858-bb9b-4fecaef3f34d)
 
 ---
 
