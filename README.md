@@ -4,8 +4,8 @@ A revolutionary decentralized application built on the Stacks blockchain that tr
 
 Deployed Smart Contract - https://explorer.hiro.so/txid/0x0f7dbe9bcf042055b7e5786943da1adadb2856df20328b9904ad3a41f830a990?chain=testnet
 
-
-![Architecture diagram of the ticketing dApp](generated_image:47)
+Demo:
+<div style="position: relative; padding-bottom: 62.5%; height: 0;"><iframe src="https://www.loom.com/embed/d615d2eb6a744896b17d2ef681a16aa9?sid=c31dc6f1-7525-417c-9d0f-50bd4700744b" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
 
 ---
 
@@ -593,35 +593,11 @@ npm run test:e2e
 
 ---
 
-## 🤝 Contributing & Community
+### Team Members
 
-### How to Contribute
-
-We welcome contributions from developers, designers, and blockchain enthusiasts:
-
-1. **Fork the Repository**
-2. **Create Feature Branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-3. **Make Changes and Test**
-4. **Submit Pull Request**
-
-### Contribution Guidelines
-
-- Follow existing code style and patterns
-- Add comprehensive tests for new features
-- Update documentation as needed
-- Ensure all tests pass before submission
-
-### Development Standards
-
-- **Code Quality**: ESLint and Prettier for consistent formatting
-- **Type Safety**: Full TypeScript coverage in frontend
-- **Testing**: Minimum 80% test coverage
-- **Documentation**: Inline comments and README updates
-
----
+- K.S.Adithya
+- Tharun D
+- Sai Abhishek CH
 
 ## 📄 License & Legal
 
@@ -659,29 +635,6 @@ This software is provided "as is" without warranty. Users are responsible for:
 - [Hiro Developer Tools](https://www.hiro.so/)
 - [Leather Wallet](https://leather.io/)
 - [IPFS Documentation](https://docs.ipfs.io/)
-
-### Contact Information
-
-- **Project Maintainer**: [Your GitHub Profile]
-- **Email**: your-email@example.com
-- **Twitter**: @YourTwitterHandle
-- **LinkedIn**: Your LinkedIn Profile
-
----
-
-## 🎉 Conclusion
-
-The Anti-Scalper Ticketing dApp represents a paradigm shift in how we think about event ticketing. By leveraging blockchain technology, we create a system that is:
-
-- **Fair**: Automatic enforcement of anti-scalping rules
-- **Transparent**: All transactions visible on the blockchain
-- **Secure**: Cryptographic proof of ownership and authenticity
-- **Decentralized**: No single point of failure or control
-- **Innovative**: Foundation for future ticketing innovations
-
-This project demonstrates the power of combining Bitcoin's security with smart contract functionality to solve real-world problems. Whether you're an event organizer tired of scalpers, a fan frustrated with inflated prices, or a developer interested in blockchain applications, this dApp provides a solid foundation for building the future of fair ticketing.
-
-**Start building the future of ticketing today!**
 
 ---
 
